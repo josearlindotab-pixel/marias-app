@@ -1,0 +1,41 @@
+name: Gerar APK MARIAS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar arquivos do repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Preparar Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Verificar arquivos do projeto
+        run: |
+          echo "Arquivos encontrados:"
+          ls -la
+          if [ ! -f settings.gradle ] && [ ! -f settings.gradle.kts ]; then
+            echo "Projeto Android ainda nao configurado."
+            exit 1
+          fi
+
+      - name: Gerar APK
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Disponibilizar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: MARIAS-APK
+          path: app/build/outputs/apk/debug/*.apk
